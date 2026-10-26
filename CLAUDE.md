@@ -4,7 +4,7 @@ Guidance for AI agents (Claude Code, Cowork, and others) working in this reposit
 
 ## Project Overview
 
-**PM Skills** (`phuryn/pm-skills`) — a marketplace of **9 independent plugins** (68 skills, 42 commands) that bring structured product-management workflows to AI coding assistants. Built for Claude Code and Claude Cowork; the skills are also compatible with other agents (Gemini CLI, Cursor, Codex CLI).
+**PM Skills** (`phuryn/pm-skills`) — a marketplace of **9 independent plugins** (69 skills, 42 commands) that bring structured product-management workflows to AI coding assistants. Built for Claude Code and Claude Cowork; the skills are also compatible with other agents (Gemini CLI, Cursor, Codex CLI).
 
 Owner: Paweł Huryn — pawel@productcompass.pm — https://www.productcompass.pm
 
@@ -13,6 +13,7 @@ Owner: Paweł Huryn — pawel@productcompass.pm — https://www.productcompass.p
 ```
 pm-skills/                           <- repo root
 ├── .claude-plugin/marketplace.json  <- root marketplace manifest (lists all 9 plugins)
+├── .cursor-plugin/marketplace.json  <- Cursor marketplace manifest (mirrors the Claude one)
 ├── .docs/images/                    <- images used by README (webp, gif)
 ├── .gitattributes
 ├── .gitignore
@@ -27,6 +28,7 @@ pm-skills/                           <- repo root
 ├── tests/                           <- unit + docs-consistency tests (unittest)
 └── pm-{name}/                       <- 9 plugin directories
     ├── .claude-plugin/plugin.json   <- per-plugin manifest
+    ├── .cursor-plugin/plugin.json   <- per-plugin Cursor manifest (mirrors the Claude one)
     ├── skills/{skill}/SKILL.md      <- one folder per skill
     ├── commands/{command}.md        <- one file per command
     └── README.md                    <- per-plugin documentation
@@ -73,7 +75,7 @@ Descriptions in `plugin.json` and the repo `README.md` should stay aligned (iden
 ## Versioning & Releases
 
 - **`CHANGELOG.md` is the source of truth.** The newest `## vX.Y.Z — YYYY-MM-DD` heading is the released version. Pushing a commit to `main` that adds a new heading makes CI (`.github/workflows/tag-on-merge.yml`) verify the version sync and test suite, tag `vX.Y.Z`, and publish a GitHub Release with that section as notes.
-- **Keep every version in sync.** `marketplace.json`, all 9 `plugin.json` files, and the newest CHANGELOG heading always carry the same version (enforced by `tests/test_consistency.py`). There is no independent per-plugin versioning.
+- **Keep every version in sync.** Both marketplace manifests (`.claude-plugin/marketplace.json` → `version`, `.cursor-plugin/marketplace.json` → `metadata.version`), all 18 `plugin.json` files (`.claude-plugin/plugin.json` and `.cursor-plugin/plugin.json` in each of the 9 plugins), and the newest CHANGELOG heading always carry the same version (enforced by `tests/test_consistency.py`). There is no independent per-plugin versioning.
 - Every user-facing change gets a CHANGELOG bullet under `## Unreleased`; contributors are credited inline (`#PR, thanks @handle`). Full procedure: CONTRIBUTING.md § Releases.
 - Semver: breaking = major; new skills/commands or changed behavior = minor; fixes/docs = patch.
 
@@ -99,9 +101,9 @@ Descriptions in `plugin.json` and the repo `README.md` should stay aligned (iden
 
 ## Validation
 
-`validate_plugins.py` checks: `plugin.json` required fields / name match / semver / author / keywords; skill frontmatter and name-matches-directory; command frontmatter (`description` + `argument-hint`); README presence; and intra-plugin command→skill references.
+`validate_plugins.py` checks: `.claude-plugin/plugin.json` required fields / name match / semver / author / keywords; skill frontmatter and name-matches-directory; command frontmatter (`description` + `argument-hint`); README presence; and intra-plugin command→skill references.
 
-`tests/` adds the consistency layer: README counts vs. disk, marketplace plugin list vs. directories, version sync across all manifests + CHANGELOG, CHANGELOG heading format, and `/plugin:command` references in plugin READMEs. Both run in CI on every PR and push to `main`, and gate releases.
+`tests/` adds the consistency layer: README counts vs. disk, marketplace plugin list vs. directories, version sync across all Claude and Cursor manifests + CHANGELOG, CHANGELOG heading format, and `/plugin:command` references in plugin READMEs. Both run in CI on every PR and push to `main`, and gate releases.
 
 ```
 python3 validate_plugins.py

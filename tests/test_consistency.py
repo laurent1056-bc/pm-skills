@@ -2,7 +2,8 @@
 
 What this locks in:
 - marketplace.json lists exactly the plugin directories on disk;
-- one version everywhere: newest CHANGELOG heading == marketplace.json == every plugin.json
+- one version everywhere: newest CHANGELOG heading == marketplace.json == every plugin.json,
+  for both the Claude (.claude-plugin/) and Cursor (.cursor-plugin/) manifests
   (CLAUDE.md rule: no independent per-plugin versioning);
 - CHANGELOG headings are well-formed, dated, unique, and newest-first;
 - README counts (headline, per-plugin summaries, plugin README section headers)
@@ -17,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
+CURSOR_MARKETPLACE = ROOT / ".cursor-plugin" / "marketplace.json"
 CHANGELOG = ROOT / "CHANGELOG.md"
 README = ROOT / "README.md"
 
@@ -93,6 +95,28 @@ class TestVersionSync(unittest.TestCase):
             mismatches,
             [],
             f"CHANGELOG says v{want}; out of sync: {mismatches}",
+        )
+
+    def test_cursor_manifests_match_changelog(self):
+        """The Cursor manifests mirror the Claude ones: one per plugin, same version."""
+        want = latest_changelog_version()
+        mismatches = []
+        cursor_mp = json.loads(CURSOR_MARKETPLACE.read_text(encoding="utf-8"))
+        mp_version = cursor_mp["metadata"]["version"]
+        if mp_version != want:
+            mismatches.append(f".cursor-plugin/marketplace.json={mp_version}")
+        for p in plugin_dirs():
+            manifest = p / ".cursor-plugin" / "plugin.json"
+            if not manifest.is_file():
+                mismatches.append(f"{p.name}/.cursor-plugin/plugin.json missing")
+                continue
+            v = json.loads(manifest.read_text(encoding="utf-8"))["version"]
+            if v != want:
+                mismatches.append(f"{p.name}/.cursor-plugin/plugin.json={v}")
+        self.assertEqual(
+            mismatches,
+            [],
+            f"CHANGELOG says v{want}; Cursor manifests out of sync: {mismatches}",
         )
 
 
